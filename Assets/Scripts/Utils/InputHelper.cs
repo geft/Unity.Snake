@@ -1,64 +1,106 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 
 public class InputHelper : MonoBehaviour {
 
-	public static bool GetStandardMoveMultiInputKeys()
-	{
-		if (Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.A)) { return true; }
-		if (Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.S)) { return true; }
-		if (Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.D)) { return true; }
-																			   
-		if (Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.S)) { return true; }
-		if (Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.D)) { return true; }
-																			   
-		if (Input.GetKey(KeyCode.S) && Input.GetKey(KeyCode.D)) { return true; }
-		
-		// Above checks result in D
-		
-		if (Input.GetKey(KeyCode.UpArrow) && Input.GetKey(KeyCode.LeftArrow)) { return true; }
-		if (Input.GetKey(KeyCode.UpArrow) && Input.GetKey(KeyCode.DownArrow)) { return true; }
-		if (Input.GetKey(KeyCode.UpArrow) && Input.GetKey(KeyCode.RightArrow)) { return true; }
-		
-		if (Input.GetKey(KeyCode.LeftArrow) && Input.GetKey(KeyCode.DownArrow)) { return true; }
-		if (Input.GetKey(KeyCode.LeftArrow) && Input.GetKey(KeyCode.RightArrow)) { return true; }
-		
-		if (Input.GetKey(KeyCode.DownArrow) && Input.GetKey(KeyCode.RightArrow)) { return true; }
-		
-		// Above checks result in RightArrow
-		
-		return false;
-	}
+	public KeyCode Up, Down, Left, Right;
+	public enum Direction {NONE, UP, DOWN, LEFT, RIGHT};
+	public static Direction direction, buffer;
 	
-	public static bool GetStandardMoveUpDirection()
+	private Button[] buttons;
+
+	private void Start()
 	{
-		if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
-			return true;
+		direction = Direction.NONE;
+		buffer = Direction.NONE;
+		
+		buttons = GameObject.Find("GUI").GetComponentsInChildren<Button>();
+		
+		foreach (Button b in buttons)
+		{
+			if (b.name == "Up")
+			{
+				b.onClick.AddListener(delegate {
+					if (direction != Direction.DOWN)
+					{
+						//Handheld.Vibrate();
+						buffer = Direction.UP;
+					}
+				});
+			}
 			
-		return false;
-	}
-	
-	public static bool GetStandardMoveLeftDirection()
-	{
-		if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-			return true;
+			else if (b.name == "Down")
+			{
+				b.onClick.AddListener(delegate {
+					if (direction != Direction.UP)
+					{
+						//Handheld.Vibrate();
+						buffer = Direction.DOWN;
+					}
+				});
+			}
+			
+			else if (b.name == "Left")
+			{
+				b.onClick.AddListener(delegate {
+					if (direction != Direction.RIGHT && direction != Direction.NONE)
+					{
+						//Handheld.Vibrate();
+						buffer = Direction.LEFT;
+					}
+				});
+			}
+			
+			else if (b.name == "Right")
+			{
+				b.onClick.AddListener(delegate {
+					if (direction != Direction.LEFT)
+					{
+						//Handheld.Vibrate();
+						buffer = Direction.RIGHT;
+					}
+				});
+			}
+			
+		}
 		
-		return false;
 	}
-	
-	public static bool GetStandardMoveDownDirection()
+
+	private void Update()
 	{
-		if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
-			return true;
-		
-		return false;
+		if (SnakeGame.paused)
+			return;
+	
+		CheckForInput();
+
+		if (SnakeGame.ready)
+		{
+			direction = buffer;
+		}
 	}
-	
-	public static bool GetStandardMoveRightDirection()
+
+	private void CheckForInput()
 	{
-		if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-			return true;
+		if (Input.GetKey(Up) && direction != Direction.DOWN)
+		{
+			buffer = Direction.UP;
+		}
 		
-		return false;
+		else if (Input.GetKey(Down) && direction != Direction.UP)
+		{
+			buffer = Direction.DOWN;
+		}
+		
+		else if (Input.GetKey(Left) && direction != Direction.RIGHT && direction != Direction.NONE)
+		{
+			buffer = Direction.LEFT;
+		}
+		
+		else if (Input.GetKey(Right) && direction != Direction.LEFT)
+		{
+			buffer = Direction.RIGHT;
+		}
 	}
 }
